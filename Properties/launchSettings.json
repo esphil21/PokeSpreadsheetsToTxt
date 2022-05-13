@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "PokeSpreadsheetsToTxt": {
+      "commandName": "Project",
+      "commandLineArgs": "\"C:\\Source\\RMXP\\Cobalt 0.2.4\\CustomWork\\PokeSpreadsheetsToTxt\\Pokemon Cobalt Spreadsheet.xlsx\""
+    }
+  }
+}
