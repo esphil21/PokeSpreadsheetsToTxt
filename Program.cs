@@ -20,17 +20,15 @@ namespace PokeSpreadsheetsToTxt
         static void Main(string[] args)
         {
             ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
-
-            var spreadsheet = new FileInfo(@"C:\Source\RMXP\Cobalt 0.2.4\CustomWork\PokeSpreadsheetsToTxt\Pokemon Cobalt Spreadsheet.xlsx");
-            var oldtxt = new FileInfo(@"C:\Source\RMXP\Cobalt 0.2.4\CustomWork\PokeSpreadsheetsToTxt\PokeSpreadsheetsToTxt\bin\Debug\netcoreapp3.1\pokemon.txt");
+            
+            var spreadsheet = new FileInfo(@"D:\Extra Dev\RMXP\SpreadsheetCode\PokeSpreadsheetsToTxt\PokemonCobaltSpreadsheet.xlsx");
+            var oldtxt = new FileInfo(@"D:\Extra Dev\RMXP\SpreadsheetCode\PokeSpreadsheetsToTxt\pokemon.txt");
             List<string> PKMNtxtLines = null;
             List<int> LineNum_O_DexNums = new List<int>();
 
             if (oldtxt.Exists)
             {
                 PKMNtxtLines = new List<string>(File.ReadAllLines(oldtxt.FullName).ToList());
-
-
 
                 for (int i = 0; i < PKMNtxtLines.Count; i++)
                 {
@@ -55,12 +53,15 @@ namespace PokeSpreadsheetsToTxt
                 for (int i = 2; i < 30; i++)
                 {
                     newPoke = new Pokemon();
-                    if(CreateAPokemon(ref newPoke, wb, i, PKMNtxtLines, LineNum_O_DexNums) && IsCompletePokemon(newPoke))
+                    if (CreateAPokemon(ref newPoke, wb, i, PKMNtxtLines, LineNum_O_DexNums))
                     {
-                        string internalName = newPoke.GetInternalName();
-                        if (!Pokedex.ContainsKey(internalName))
+                        if (IsCompletePokemon(newPoke))
                         {
-                            Pokedex.Add(internalName, newPoke);
+                            string internalName = newPoke.GetInternalName();
+                            if (!Pokedex.ContainsKey(internalName))
+                            {
+                                Pokedex.Add(internalName, newPoke);
+                            }
                         }
                     }
                     else
@@ -68,7 +69,6 @@ namespace PokeSpreadsheetsToTxt
                         break;
                     }
                 }
-
                 UpdatePokemonTXT(Pokedex);
             }
         }
@@ -93,12 +93,12 @@ namespace PokeSpreadsheetsToTxt
             var Evolutions = wb.Worksheets[(int)SheetName.EvolutionMethods];
 
             bool newPoke = false;
-
             int PKMNtxtLine = 0;
+
             // NUM
-            if (int.TryParse(NatDex.GetValue(row, (int)NatDexCol.Num).ToString(), out int int_result) && !_poke.SetDexNumber(int_result))
+            if (!int.TryParse(NatDex.GetValue(row, (int)NatDexCol.NatDexNum).ToString(), out int int_result) && !_poke.SetDexNumber(int_result))
             {
-                Console.WriteLine($"Failed to SetDexNumber with data at row: {row}, col: {NatDexCol.Num}");
+                Console.WriteLine($"Failed to SetDexNumber with data at row: {row}, col: {(int)NatDexCol.NatDexNum}");
                 return false;
             }
             PKMNtxtLine++;
@@ -107,7 +107,6 @@ namespace PokeSpreadsheetsToTxt
             {
                 newPoke = true;
             }
-
 
             // NAME
             if (!_poke.SetName(NatDex.GetValue(row, (int)NatDexCol.Pokemon_Name).ToString()))
@@ -125,8 +124,6 @@ namespace PokeSpreadsheetsToTxt
 
             }
 
-
-
             // INTERNAL_NAME
             if (!_poke.SetInternalName(_poke.GetName().ToUpper()))
             {
@@ -134,7 +131,6 @@ namespace PokeSpreadsheetsToTxt
                 return false;
             }
             PKMNtxtLine++;
-
 
             // TYPE1
             var _type1 = NatDex.GetValue(row, (int)NatDexCol.Type1);
@@ -162,7 +158,6 @@ namespace PokeSpreadsheetsToTxt
                 PKMNtxtLine++;
             }
 
-
             // STATS
             int statCol = (int)NatDexCol.HP;
             for (int i = 0; i < Pokemon.NUM_STATS - 1; i++)
@@ -179,9 +174,8 @@ namespace PokeSpreadsheetsToTxt
             }
             PKMNtxtLine++;
 
-
             // GENDERRATE
-            var genderrate = NatDex.GetValue(row, (int)NatDexCol.GenderRate);
+            var genderrate = NatDex.GetValue(row, (int)NatDexCol.GenderRatio);
             if (genderrate == null && !newPoke)    // then pull from oldtxt
             {
                 string lineGenderRate = oldtxt[dexnums[row - 2] + PKMNtxtLine];
@@ -193,7 +187,6 @@ namespace PokeSpreadsheetsToTxt
                 return false;
             }
             PKMNtxtLine++;
-
 
             // GROWTHRATE
             var growthrate = NatDex.GetValue(row, (int)NatDexCol.GrowthRate);
@@ -223,9 +216,8 @@ namespace PokeSpreadsheetsToTxt
             }
             PKMNtxtLine++;
 
-
             // EVs
-            var ev = NatDex.GetValue(row, (int)NatDexCol.EffortPoints_TXT);
+            var ev = NatDex.GetValue(row, (int)NatDexCol.EffortPoints);
             if (ev == null && !newPoke)         // then pull from oldtxt
             {
                 string lineEV = oldtxt[dexnums[row - 2] + PKMNtxtLine];
@@ -238,9 +230,8 @@ namespace PokeSpreadsheetsToTxt
             }
             PKMNtxtLine++;
 
-
             // RARENESS
-            var rareness = NatDex.GetValue(row, (int)NatDexCol.Rareness);
+            var rareness = NatDex.GetValue(row, (int)NatDexCol.CatchRate);
             if (rareness == null && !newPoke)    // then pull from oldtxt
             {
                 string lineRareness = oldtxt[dexnums[row - 2] + PKMNtxtLine];
@@ -252,7 +243,6 @@ namespace PokeSpreadsheetsToTxt
                 return false;
             }
             PKMNtxtLine++;
-
 
             // HAPPINESS
             var happiness = NatDex.GetValue(row, (int)NatDexCol.Happiness);
@@ -267,7 +257,6 @@ namespace PokeSpreadsheetsToTxt
                 return false;
             }
             PKMNtxtLine++;
-
 
             // ABILITIES
             var _ability1 = NatDex.GetValue(row, (int)NatDexCol.Ability1);
@@ -307,7 +296,6 @@ namespace PokeSpreadsheetsToTxt
                 _poke.SetAbility(2, "");
             }
 
-
             // MOVES
             // LEARNSET
             var learnset = MoveSets.GetValue(row, (int)MoveSetsCol.LearnSet);
@@ -326,7 +314,6 @@ namespace PokeSpreadsheetsToTxt
 
             // TM_MOVES updates a different file than pokemon.txt
             // TR_MOVES updates a different file than pokemon.txt
-
 
             // TUTOR_MOVES
             string tutoring = null; // TODO: update to pull from proper spreadsheet once its up to date.
@@ -352,7 +339,6 @@ namespace PokeSpreadsheetsToTxt
                 _poke.SetTutorMoves("");  // Egg Moves remains empty
             }
 
-
             // EGG_MOVES
             var eggmoves = MoveSets.GetValue(row, (int)MoveSetsCol.EggMoves);
             if (eggmoves == null && !newPoke)    // then pull from oldtxt
@@ -377,7 +363,6 @@ namespace PokeSpreadsheetsToTxt
                 _poke.SetEggMoves("");  // Egg Moves remains empty
             }
 
-
             // COMPATIBILITY
             int groupCol = (int)NatDexCol.EggGroup1;
             for (int i = 0; i < 2; i++)
@@ -395,7 +380,6 @@ namespace PokeSpreadsheetsToTxt
             }
             PKMNtxtLine++;
 
-
             // STEPS_TO_HATCH
             var steps = NatDex.GetValue(row, (int)NatDexCol.StepsToHatch);
             if (steps == null && !newPoke)    // then pull from oldtxt
@@ -409,7 +393,6 @@ namespace PokeSpreadsheetsToTxt
                 return false;
             }
             PKMNtxtLine++;
-
 
             // HEIGHT
             var height = NatDex.GetValue(row, (int)NatDexCol.Height);
@@ -425,7 +408,6 @@ namespace PokeSpreadsheetsToTxt
             }
             PKMNtxtLine++;
 
-
             // WEIGHT
             var weight = NatDex.GetValue(row, (int)NatDexCol.Weight);
             if (weight == null && !newPoke)    // then pull from oldtxt
@@ -439,7 +421,6 @@ namespace PokeSpreadsheetsToTxt
                 return false;
             }
             PKMNtxtLine++;
-
 
             // COLOR
             var color = NatDex.GetValue(row, (int)NatDexCol.Color);
@@ -455,7 +436,6 @@ namespace PokeSpreadsheetsToTxt
             }
             PKMNtxtLine++;
 
-
             // SHAPE
             var shape = NatDex.GetValue(row, (int)NatDexCol.Shape);
             if (shape == null && !newPoke)    // then pull from oldtxt
@@ -469,7 +449,6 @@ namespace PokeSpreadsheetsToTxt
                 return false;
             }
             PKMNtxtLine++;
-
 
             // KIND
             var kind = NatDex.GetValue(row, (int)NatDexCol.Category);
@@ -485,7 +464,6 @@ namespace PokeSpreadsheetsToTxt
             }
             PKMNtxtLine++;
 
-
             // POKEDEX
             var entry = NatDex.GetValue(row, (int)NatDexCol.DexEntry);
             if (entry == null && !newPoke)    // then pull from oldtxt
@@ -499,8 +477,7 @@ namespace PokeSpreadsheetsToTxt
                 return false;
             }
             PKMNtxtLine++;
-
-
+            
             // GENERATION
             var gen = NatDex.GetValue(row, (int)NatDexCol.Gen);
             if (gen == null && !newPoke)    // then pull from oldtxt
@@ -516,130 +493,130 @@ namespace PokeSpreadsheetsToTxt
             PKMNtxtLine++;
 
             #region POSITIONING
-            // BattlerPlayerX
-            string lineBPX = oldtxt[dexnums[row - 2] + PKMNtxtLine];
-            string bpX = "";
-            if (lineBPX.StartsWith("BattlerPlayerX ="))
-            {
-                bpX = lineBPX.Substring(lineBPX.IndexOf("=") + 2);
-            }
-            else
-            {
-                bpX = null;
-            }
-            if (bpX != null)
-            {
-                if (int.TryParse(bpX.ToString(), out int_result))
-                {
-                    _poke.SetBattlerPlayerX(int_result);
-                    PKMNtxtLine++;
-                }
-            }
+            //// BattlerPlayerX
+            //string lineBPX = oldtxt[dexnums[row - 2] + PKMNtxtLine];
+            //string bpX = "";
+            //if (lineBPX.StartsWith("BattlerPlayerX ="))
+            //{
+            //    bpX = lineBPX.Substring(lineBPX.IndexOf("=") + 2);
+            //}
+            //else
+            //{
+            //    bpX = null;
+            //}
+            //if (bpX != null)
+            //{
+            //    if (int.TryParse(bpX.ToString(), out int_result))
+            //    {
+            //        _poke.SetBattlerPlayerX(int_result);
+            //        PKMNtxtLine++;
+            //    }
+            //}
 
-            // BattlerPlayerY
-            string lineBPY = oldtxt[dexnums[row - 2] + PKMNtxtLine];
-            string bpY = "";
-            if (lineBPY.StartsWith("BattlerPlayerY ="))
-            {
-                bpY = lineBPY.Substring(lineBPY.IndexOf("=") + 2);
-            }
-            else
-            {
-                bpY = null;
-            }
-            if (bpY != null)
-            {
-                if (int.TryParse(bpY.ToString(), out int_result))
-                {
-                    _poke.SetBattlerPlayerY(int_result);
-                    PKMNtxtLine++;
-                }
-            }
+            //// BattlerPlayerY
+            //string lineBPY = oldtxt[dexnums[row - 2] + PKMNtxtLine];
+            //string bpY = "";
+            //if (lineBPY.StartsWith("BattlerPlayerY ="))
+            //{
+            //    bpY = lineBPY.Substring(lineBPY.IndexOf("=") + 2);
+            //}
+            //else
+            //{
+            //    bpY = null;
+            //}
+            //if (bpY != null)
+            //{
+            //    if (int.TryParse(bpY.ToString(), out int_result))
+            //    {
+            //        _poke.SetBattlerPlayerY(int_result);
+            //        PKMNtxtLine++;
+            //    }
+            //}
 
-            // BattlerEnemyX
-            string lineBEX = oldtxt[dexnums[row - 2] + PKMNtxtLine];
-            string beX = "";
-            if (lineBEX.StartsWith("BattlerEnemyX ="))
-            {
-                beX = lineBEX.Substring(lineBEX.IndexOf("=") + 2);
-            }
-            else
-            {
-                beX = null;
-            }
-            if (beX != null)
-            {
-                if (int.TryParse(beX.ToString(), out int_result))
-                {
-                    _poke.SetBattlerEnemyX(int_result);
-                    PKMNtxtLine++;
-                }
-            }
+            //// BattlerEnemyX
+            //string lineBEX = oldtxt[dexnums[row - 2] + PKMNtxtLine];
+            //string beX = "";
+            //if (lineBEX.StartsWith("BattlerEnemyX ="))
+            //{
+            //    beX = lineBEX.Substring(lineBEX.IndexOf("=") + 2);
+            //}
+            //else
+            //{
+            //    beX = null;
+            //}
+            //if (beX != null)
+            //{
+            //    if (int.TryParse(beX.ToString(), out int_result))
+            //    {
+            //        _poke.SetBattlerEnemyX(int_result);
+            //        PKMNtxtLine++;
+            //    }
+            //}
 
-            // BattlerEnemyY
-            string lineBEY = oldtxt[dexnums[row - 2] + PKMNtxtLine];
-            string beY = "";
-            if (lineBEY.StartsWith("BattlerEnemyY ="))
-            {
-                beY = lineBEY.Substring(lineBEY.IndexOf("=") + 2);
-            }
-            else
-            {
-                beY = null;
-            }
-            if (beY != null)
-            {
-                if (int.TryParse(beY.ToString(), out int_result))
-                {
-                    _poke.SetBattlerEnemyY(int_result);
-                    PKMNtxtLine++;
-                }
-            }
+            //// BattlerEnemyY
+            //string lineBEY = oldtxt[dexnums[row - 2] + PKMNtxtLine];
+            //string beY = "";
+            //if (lineBEY.StartsWith("BattlerEnemyY ="))
+            //{
+            //    beY = lineBEY.Substring(lineBEY.IndexOf("=") + 2);
+            //}
+            //else
+            //{
+            //    beY = null;
+            //}
+            //if (beY != null)
+            //{
+            //    if (int.TryParse(beY.ToString(), out int_result))
+            //    {
+            //        _poke.SetBattlerEnemyY(int_result);
+            //        PKMNtxtLine++;
+            //    }
+            //}
 
-            // BattlerShadowX
-            string lineBSX = oldtxt[dexnums[row - 2] + PKMNtxtLine];
-            string bsX = "";
-            if (lineBSX.StartsWith("BattlerShadowX ="))
-            {
-                bsX = lineBSX.Substring(lineBSX.IndexOf("=") + 2);
-            }
-            else
-            {
-                bsX = null;
-            }
-            if (bsX != null)
-            {
-                if (int.TryParse(bsX.ToString(), out int_result))
-                {
-                    _poke.SetBattlerShadowX(int_result);
-                    PKMNtxtLine++;
-                }
-            }
+            //// BattlerShadowX
+            //string lineBSX = oldtxt[dexnums[row - 2] + PKMNtxtLine];
+            //string bsX = "";
+            //if (lineBSX.StartsWith("BattlerShadowX ="))
+            //{
+            //    bsX = lineBSX.Substring(lineBSX.IndexOf("=") + 2);
+            //}
+            //else
+            //{
+            //    bsX = null;
+            //}
+            //if (bsX != null)
+            //{
+            //    if (int.TryParse(bsX.ToString(), out int_result))
+            //    {
+            //        _poke.SetBattlerShadowX(int_result);
+            //        PKMNtxtLine++;
+            //    }
+            //}
 
-            // BattlerShadowSize
-            string lineBSSize = oldtxt[dexnums[row - 2] + PKMNtxtLine];
-            string bsSize = "";
-            if (lineBSSize.StartsWith("BattlerShadowSize ="))
-            {
-                bsSize = lineBSSize.Substring(lineBSSize.IndexOf("=") + 2);
-            }
-            else
-            {
-                bsSize = null;
-            }
-            if (bsSize != null)
-            {
-                if (int.TryParse(bsSize.ToString(), out int_result))
-                {
-                    _poke.SetBattlerShadowSize(int_result);
-                    PKMNtxtLine++;
-                }
-            }
+            //// BattlerShadowSize
+            //string lineBSSize = oldtxt[dexnums[row - 2] + PKMNtxtLine];
+            //string bsSize = "";
+            //if (lineBSSize.StartsWith("BattlerShadowSize ="))
+            //{
+            //    bsSize = lineBSSize.Substring(lineBSSize.IndexOf("=") + 2);
+            //}
+            //else
+            //{
+            //    bsSize = null;
+            //}
+            //if (bsSize != null)
+            //{
+            //    if (int.TryParse(bsSize.ToString(), out int_result))
+            //    {
+            //        _poke.SetBattlerShadowSize(int_result);
+            //        PKMNtxtLine++;
+            //    }
+            //}
             #endregion POSITIONING
 
             // EVOLUTIONS
             string lineEvos = oldtxt[dexnums[row - 2] + PKMNtxtLine];
-            string evos = "";
+            string evos;
             if (lineEvos.StartsWith("Evolutions ="))
             {
                 evos = lineEvos.Substring(lineEvos.IndexOf("=") + 2);
@@ -795,9 +772,9 @@ namespace PokeSpreadsheetsToTxt
                     }
                 }
 
-                writer.WriteLine($"GenderRate = {poke.GetGenderRate()}");
+                writer.WriteLine($"GenderRatio = {poke.GetGenderRate()}");
 
-                writer.WriteLine($"GenderRate = {poke.GetGrowthRate()}");
+                writer.WriteLine($"GenderRatio = {poke.GetGrowthRate()}");
 
                 writer.WriteLine($"BaseEXP = {poke.GetBaseEXP()}");
 
@@ -853,7 +830,7 @@ namespace PokeSpreadsheetsToTxt
 
                 writer.WriteLine($"Shape = {poke.GetShape()}");
 
-                writer.WriteLine($"Kind = {poke.GetKind()}");
+                writer.WriteLine($"Category = {poke.GetKind()}");
 
                 writer.WriteLine($"Pokedex = {poke.GetDexEntry()}");
 

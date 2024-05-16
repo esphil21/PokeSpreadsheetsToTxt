@@ -19,7 +19,7 @@ namespace PokeSpreadsheetsToTxt
         private Tuple<int?, int?, int?, int?, int?, int?, int?> Stats = 
             new Tuple<int?, int?, int?, int?, int?, int?, int?>(HP, ATK, DEF, SPE, SPATK, SPDEF, BST);
 
-        private PokeGenderRate? GenderRate;
+        private PokeGenderRatio? GenderRatio;
         private PokeGrowthRate? GrowthRate;
 
         private int? BaseEXP;
@@ -35,6 +35,7 @@ namespace PokeSpreadsheetsToTxt
             new Tuple<PokeAbility?, PokeAbility?, PokeAbility?>(Ability1, Ability2, HiddenAbility);
 
         private string LearnMoves, TutorMoves, EggMoves, TM_Moves, TR_Moves;
+        private string PossibleMoves;
 
         private static PokeEggGroup? EggGroup1, EggGroup2;
         private Tuple<PokeEggGroup?, PokeEggGroup?> EggGroups =
@@ -47,7 +48,7 @@ namespace PokeSpreadsheetsToTxt
 
         private PokeShape? Shape;
 
-        private string Kind;
+        private string Category;
 
         private string DexEntry;
 
@@ -57,9 +58,9 @@ namespace PokeSpreadsheetsToTxt
         private int? Generation;
 
         // 1 = common, 2 = uncommon, 3 = rare
-        private static string WildItem1, WildItem2, WildItem3;
+        private static string CommonItem, UncommonItem, RareItem;
         private Tuple<string, string, string> WildItems =
-            new Tuple<string, string, string>(WildItem1, WildItem2, WildItem3);
+            new Tuple<string, string, string>(CommonItem, UncommonItem, RareItem);
 
         // POSITIONING
         private int? BattlerPlayerX, BattlerPlayerY, BattlerEnemyX, BattlerEnemyY, BattlerShadowX, BattlerShadowSize;
@@ -68,7 +69,6 @@ namespace PokeSpreadsheetsToTxt
 
         // EXTRAS
         private bool? Altered, Starter, Guardian, PostGame;
-
 
         // The following have no accessors
         public const int DEX_NUM_MAX = 1002;
@@ -152,9 +152,9 @@ namespace PokeSpreadsheetsToTxt
             PokeAbility.WHITESMOKE, PokeAbility.WIMPOUT, PokeAbility.WONDERGUARD, PokeAbility.WONDERSKIN, PokeAbility.ZENMODE,
             PokeAbility.ZEPHYR };
 
-        private static List<PokeGenderRate> PokeGenderRateArr = new List<PokeGenderRate>() { PokeGenderRate.Null, PokeGenderRate.Genderless,
-            PokeGenderRate.AlwaysMale, PokeGenderRate.Female25Percent, PokeGenderRate.Female50Percent, PokeGenderRate.Female75Percent,
-            PokeGenderRate.AlwaysFemale };
+        private static List<PokeGenderRatio> PokeGenderRateArr = new List<PokeGenderRatio>() { PokeGenderRatio.Null, PokeGenderRatio.Genderless,
+            PokeGenderRatio.AlwaysMale, PokeGenderRatio.Female25Percent, PokeGenderRatio.Female50Percent, PokeGenderRatio.Female75Percent,
+            PokeGenderRatio.AlwaysFemale };
 
         private static List<PokeGrowthRate> PokeGrowthRateArr = new List<PokeGrowthRate>() { PokeGrowthRate.Null, PokeGrowthRate.Fast,
             PokeGrowthRate.Medium, PokeGrowthRate.Slow, PokeGrowthRate.Parabolic, PokeGrowthRate.Erratic, PokeGrowthRate.Fluctuating };
@@ -172,8 +172,8 @@ namespace PokeSpreadsheetsToTxt
         public Pokemon()
         {
             DexNumber = null;
-            Name = null;
             InternalName = null;
+            Name = null;
 
             Type1 = null; Type2 = null;
             Types = null;
@@ -181,7 +181,7 @@ namespace PokeSpreadsheetsToTxt
             HP = null; ATK = null; DEF = null; SPE = null; SPATK = null; SPDEF = null; BST = null;
             Stats = null;
 
-            GenderRate = null;
+            GenderRatio = null;
             GrowthRate = null;
             BaseEXP = null;
             EffortValues = null;
@@ -192,6 +192,7 @@ namespace PokeSpreadsheetsToTxt
             Abilities = null;
 
             LearnMoves = null; EggMoves = null; TM_Moves = null; TR_Moves = null; TutorMoves = null;
+            PossibleMoves = null;
 
             EggGroup1 = null; EggGroup2 = null;
             EggGroups = null;
@@ -199,17 +200,18 @@ namespace PokeSpreadsheetsToTxt
             StepsToHatch = null;
             Height = null;
             Weight = null;
-            Kind = null;
+            Color = null;
+            Shape = null;
+            Category = null;
             DexEntry = null;
             HasForms = null;
             FormNames = null;
             Generation = null;
 
-            WildItem1 = null; WildItem2 = null; WildItem3 = null;
+            CommonItem = null; UncommonItem = null; RareItem = null;
             WildItems = null;
 
-            Color = null;
-            Shape = null;
+            Evolutions = null;
 
             Altered = null;
             Starter = null;
@@ -547,27 +549,27 @@ namespace PokeSpreadsheetsToTxt
 
         #region GENDERRATE
         /// <summary>
-        /// Returns this.GenderRate
+        /// Returns this.GenderRatio
         /// </summary>
-        /// <returns>this.GenderRate</returns>
-        public PokeGenderRate? GetGenderRate()
+        /// <returns>this.GenderRatio</returns>
+        public PokeGenderRatio? GetGenderRate()
         {
-            return GenderRate;
+            return GenderRatio;
         }
 
         /// <summary>
-        /// If _rate is a valid PokeGenderRate sets this.GenderRate to _rate and returns true
+        /// If _rate is a valid PokeGenderRatio sets this.GenderRatio to _rate and returns true
         /// otherwise returns false
         /// </summary>
         /// <param name="_rate"></param>
-        /// <returns>True if the method successfully set this.GenderRate to _rate. otherwise false</returns>
+        /// <returns>True if the method successfully set this.GenderRatio to _rate. otherwise false</returns>
         public bool SetGenderRate(string _rate)
         {
             if (enumer.IsA_(PokeGenderRateArr, _rate))
             {
-                PokeGenderRate? gender_rate = enumer.ConvertTo_AsEnum(PokeGenderRateArr, _rate);
+                PokeGenderRatio? gender_rate = enumer.ConvertTo_AsEnum(PokeGenderRateArr, _rate);
 
-                GenderRate = gender_rate;
+                GenderRatio = gender_rate;
                 return true;
             }
             return false;
@@ -1327,24 +1329,24 @@ namespace PokeSpreadsheetsToTxt
 
         #region KIND
         /// <summary>
-        /// Returns this.Kind
+        /// Returns this.Category
         /// </summary>
-        /// <returns> the string, this.Kind </returns>
+        /// <returns> the string, this.Category </returns>
         public string GetKind()
         {
-            return Kind;
+            return Category;
         }
 
         /// <summary>
-        /// If _kind is a valid Name, sets this.Kind to _kind and returns true, otherwise returns false
+        /// If _kind is a valid Name, sets this.Category to _kind and returns true, otherwise returns false
         /// </summary>
         /// <param name="_kind"></param>
-        /// <returns>True if the method successfully set this.Kind, otherwise false</returns>
+        /// <returns>True if the method successfully set this.Category, otherwise false</returns>
         public bool SetKind(string _kind)
         {
             if (IsValidName(_kind))
             {
-                Kind = _kind;
+                Category = _kind;
                 return true;
             }
             return false;
@@ -1444,17 +1446,17 @@ namespace PokeSpreadsheetsToTxt
         {
             if (_item1 != null && _item1 != string.Empty)
             {
-                WildItem1 = _item1.ToUpper();
+                CommonItem = _item1.ToUpper();
                 if(_item2 != null)
-                    WildItem2 = _item2.ToUpper();
+                    UncommonItem = _item2.ToUpper();
                 else
-                    WildItem2 = string.Empty;
+                    UncommonItem = string.Empty;
                 if (_item3 != null)
-                    WildItem3 = _item3.ToUpper();
+                    RareItem = _item3.ToUpper();
                 else
-                    WildItem3 = string.Empty;
+                    RareItem = string.Empty;
 
-                WildItems = new Tuple<string, string, string>(WildItem1, WildItem2, WildItem3);
+                WildItems = new Tuple<string, string, string>(CommonItem, UncommonItem, RareItem);
                 return true;
             }
             return false;
@@ -1474,14 +1476,14 @@ namespace PokeSpreadsheetsToTxt
 
                 switch (_index)
                 {
-                    case 0: WildItem1 = _item; break;   // Common
-                    case 1: WildItem2 = _item; break;   // Uncommon
-                    case 2: WildItem3 = _item; break;   // Rare
+                    case 0: CommonItem = _item; break;   // Common
+                    case 1: UncommonItem = _item; break;   // Uncommon
+                    case 2: RareItem = _item; break;   // Rare
                     default:
                         return false;
                 }
 
-                WildItems = new Tuple<string, string, string>(WildItem1, WildItem2, WildItem3);
+                WildItems = new Tuple<string, string, string>(CommonItem, UncommonItem, RareItem);
                 return true;
             }
             return false;
